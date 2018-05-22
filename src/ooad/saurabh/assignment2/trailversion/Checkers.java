@@ -1,4 +1,4 @@
-package ooad.saurabh.assinment2.trailversion;
+package ooad.saurabh.assignment2.trailversion;
 
 import java.awt.Color;
 import java.awt.Dimension;

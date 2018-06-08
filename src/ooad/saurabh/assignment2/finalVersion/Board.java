@@ -91,7 +91,7 @@ public class Board extends JPanel implements ActionListener, MouseListener{
 		}
 	}//end method actionPerformed()
 	
-	//method added by Saurabh Somani
+	//Shows the best possible move
 	private void showHint(Graphics g) {
 		boolean flag = true;
 		drawBoard(g);		

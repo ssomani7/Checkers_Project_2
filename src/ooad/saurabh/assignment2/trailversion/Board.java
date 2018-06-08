@@ -19,6 +19,7 @@ public class Board extends JPanel implements ActionListener, MouseListener{
 	private JButton newGameButton;  // Button for starting a new game.
 	private JButton hintButton;     // Button for displaying next possible to optimum moves.
 	private JLabel  message;       // Label for displaying messages to the user.
+	protected Graphics g; 
 	
     public JButton getResignButton() {
 		return resignButton;
@@ -27,15 +28,14 @@ public class Board extends JPanel implements ActionListener, MouseListener{
 	public JButton getNewGameButton() {
 		return newGameButton;
 	}
-
-	public JButton getHelpButton() {
-		return hintButton;
-	}
 	
 	public JLabel getMessage() {
 		return message;
 	}
 	
+	public JButton getHintButton() {
+		return hintButton;
+	}
 	
 	private CheckersData board;  /*The data for the checkers board is kept here.
     					 This board is also responsible for generating
@@ -62,21 +62,16 @@ public class Board extends JPanel implements ActionListener, MouseListener{
 	*/
 	Board() {
 		setBackground(Color.BLACK);
-		addMouseListener(this);
-		
+		addMouseListener(this);		
 		resignButton = new JButton("Resign");
 		resignButton.addActionListener(this);
-		
 		newGameButton = new JButton("New Game");
 		newGameButton.addActionListener(this);
-		
 		hintButton = new JButton("Hint");
 		hintButton.addActionListener(this);
-		
 		message = new JLabel("",JLabel.CENTER);
 		message.setFont(new  Font("Serif", Font.BOLD, 14));
 		message.setForeground(Color.green);
-		
 		board = new CheckersData();
 		doNewGame();
 	}
@@ -90,14 +85,55 @@ public class Board extends JPanel implements ActionListener, MouseListener{
 			doNewGame();
 		else if (src == resignButton)
 			doResign();
-		else if (src == hintButton)
-			showHint();
+		else if (src == hintButton) {
+			g = getGraphics();
+			showHint(g);
+		}
 	}//end method actionPerformed()
 	
 	//method added by Saurabh Somani
-	private void showHint() {
-		//add hint functionality code here
-		message.setText("Hint Button Clicked !!!");
+	private void showHint(Graphics g) {
+		boolean flag = true;
+		drawBoard(g);		
+		/* If a piece is selected for moving (i.e. if selectedRow >= 0), then
+		draw a 2-pixel white border around that piece and draw green borders 
+		around each square that that piece can be moved to. */
+		if (selectedRow >= 0) {
+			g.setColor(Color.white);
+			g.drawRect(2 + selectedCol*20, 2 + selectedRow*20, 19, 19);
+			g.drawRect(3 + selectedCol*20, 3 + selectedRow*20, 17, 17);
+			g.setColor(Color.MAGENTA);
+            for (int i = 0; i < legalMoves.length; i++) {
+                if (legalMoves[i].isJump()) {
+                    if (legalMoves[i].getFromCol() == selectedCol && legalMoves[i].getFromRow() == selectedRow) {                
+                        g.drawRect(2 + legalMoves[i].getToCol()*20, 2 + legalMoves[i].getToRow()*20, 19, 19);
+                        g.drawRect(3 + legalMoves[i].getToCol()*20, 3 + legalMoves[i].getToRow()*20, 17, 17);
+                    }
+                } else {
+                    if (legalMoves[i].getFromCol() == selectedCol && legalMoves[i].getFromRow() == selectedRow) {
+                        if (currentPlayer == CheckersData.RED) {                       	          
+                            if ((legalMoves[i].getToCol()) < (legalMoves[i].getFromCol())) {
+                                g.drawRect(2 + legalMoves[i].getToCol()*20, 2 + legalMoves[i].getToRow()*20, 19, 19);
+                                g.drawRect(3 + legalMoves[i].getToCol()*20, 3 + legalMoves[i].getToRow()*20, 17, 17);
+                                flag = false;
+                                return;
+                            }              
+                        }
+                        else if (currentPlayer == CheckersData.BLACK){
+                            if ((legalMoves[i].getToCol()) > (legalMoves[i].getFromCol())) {                                    
+                                g.drawRect(2 + legalMoves[i].getToCol()*20, 2 + legalMoves[i].getToRow()*20, 19, 19);
+                                g.drawRect(3 + legalMoves[i].getToCol()*20, 3 + legalMoves[i].getToRow()*20, 17, 17);
+                                flag = false;
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+            if (flag) {
+            	repaint();
+            }
+		}
 	}//end method showHint()
 	
 	/**
@@ -131,9 +167,9 @@ public class Board extends JPanel implements ActionListener, MouseListener{
 				selectedRow = row;
 				selectedCol = col;
 				if (currentPlayer == CheckersData.RED)
-				message.setText("RED:  Make your move.");
+					message.setText("RED:  Make your move.");
 				else
-				message.setText("BLACK:  Make your move.");
+					message.setText("BLACK:  Make your move.");
 				repaint();
 				return;
 			}
@@ -218,7 +254,7 @@ public class Board extends JPanel implements ActionListener, MouseListener{
 		selectedRow = -1;
 	
 		/* As a courtesy to the user, if all legal moves use the same piece, then
-		select that piece automatically so the use won't have to click on it
+		select that piece automatically so the user won't have to click on it
 		to select it. */
 		if (legalMoves != null) {
 			boolean sameStartSquare = true;
@@ -230,11 +266,10 @@ public class Board extends JPanel implements ActionListener, MouseListener{
 				}
 			}
 			if (sameStartSquare) {
-			selectedRow = legalMoves[0].getFromRow();
-			selectedCol = legalMoves[0].getFromCol();
+				selectedRow = legalMoves[0].getFromRow();
+				selectedCol = legalMoves[0].getFromCol();
 			}
-		}
-		
+		}		
 		/* Make sure the board is redrawn in its new state. */	
 		repaint();	
 	}//end method doMakeMove();
@@ -258,13 +293,9 @@ public class Board extends JPanel implements ActionListener, MouseListener{
 		resignButton.setEnabled(true);
 		repaint();
 	}//end method doNewGame()
-									
-	/**
-	* Draw  checkerboard pattern in gray and lightGray.  Draw the
-	* checkers.  If a game is in progress, hilite the legal moves.
-	*/
-	public void paintComponent(Graphics g) {
 	
+	//Draws the Board for Checkers
+	private void drawBoard(Graphics g) {
 		/* Draw a two-pixel black border around the edges of the canvas. */	
 		g.setColor(Color.black);
 		g.drawRect(0,0,getSize().width-1,getSize().height-1);
@@ -302,7 +333,14 @@ public class Board extends JPanel implements ActionListener, MouseListener{
 				}
 			}
 		}
+	}//end method drawBoard()
 	
+	/**
+	* Draw  checkerboard pattern in gray and lightGray.  Draw the
+	* checkers.  If a game is in progress, hilite the legal moves.
+	*/
+	public void paintComponent(Graphics g) {
+		drawBoard(g);	
 		/* If a game is in progress, hilite the legal moves. Note that legalMoves
 		is never null while a game is in progress. */      
 		if (gameInProgress) {

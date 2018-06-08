@@ -48,7 +48,7 @@ public class Checkers extends JPanel{
 	      add(board);
 	      add(board.getNewGameButton());
 	      add(board.getResignButton());
-	      add(board.getHelpButton());
+	      add(board.getHintButton());
 	      add(board.getMessage());
 	      
 	      /* Set the position and size of each component by calling
@@ -56,7 +56,7 @@ public class Checkers extends JPanel{
 	      board.setBounds(20,20,164,164); // Note:  size MUST be 164-by-164 !
 	      board.getNewGameButton().setBounds(210, 30, 120, 30);
 	      board.getResignButton().setBounds(210, 70, 120, 30);
-	      board.getHelpButton().setBounds(210, 120, 120, 30);
+	      board.getHintButton().setBounds(210, 120, 120, 30);
 	      board.getMessage().setBounds(0, 200, 350, 30);	      
 	   } // end constructor
 }//end class Checkers 
